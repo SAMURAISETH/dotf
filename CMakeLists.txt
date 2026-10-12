@@ -26,6 +26,7 @@ add_executable(dotf
     src/git.cpp
     src/tui.cpp
     src/operations.cpp
+    src/profiles.cpp
 )
 
 target_include_directories(dotf

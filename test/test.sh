@@ -3,7 +3,7 @@
 set -uo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-APP="$ROOT_DIR/build/dotfiles-managers"
+APP="$ROOT_DIR/build/dotf"
 TEST_ROOT="$(mktemp -d)"
 OUTPUT="$TEST_ROOT/output.txt"
 
@@ -288,6 +288,48 @@ printf 'Failed: %d\n' "$FAIL_COUNT"
 if (( FAIL_COUNT > 0 )); then
     printf '\nSome tests failed. Review the output above.\n'
     exit 1
+fi
+
+# 12. Profiles
+expect_success "create personal profile" \
+    "$APP" profile create personal
+
+expect_success "create server profile" \
+    "$APP" profile create server
+
+expect_failure "reject duplicate profile" \
+    "$APP" profile create personal
+
+expect_success "select personal profile" \
+    "$APP" profile use personal
+
+if [[ "$(cat "$DOTFILES_PATH/.active-profile")" == "personal" ]]; then
+    pass "active profile is saved"
+else
+    fail "active profile is saved"
+fi
+
+printf 'personal config\n' > "$DOTFILES_PATH/personal-test.conf"
+
+expect_success "register link in personal profile" \
+    "$APP" link personal-test.conf "$HOME/personal-test.conf"
+
+expect_success "select server profile" \
+    "$APP" profile use server
+
+if "$APP" list | grep -Fq 'personal-test.conf'; then
+    fail "server profile excludes personal links"
+else
+    pass "server profile excludes personal links"
+fi
+
+expect_success "switch back to personal" \
+    "$APP" profile use personal
+
+if "$APP" list | grep -Fq 'personal-test.conf'; then
+    pass "personal profile retains its links"
+else
+    fail "personal profile retains its links"
 fi
 
 printf '\nAll tests passed!\n'

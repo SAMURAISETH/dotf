@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include "git.hpp"
 #include "file.hpp"
+#include "profiles.hpp"
 #include "tui.hpp"
 #include <fstream>
 #include <filesystem>
@@ -30,9 +31,66 @@ int main(int argc, char* argv[]) {
     std::string add_message;
     const std::string command = argv[1];
     
+    if (command == "profile") {
+        if (argc < 3) {
+            std::cerr
+                    << "Usage: dotf profile "
+                    << "<create|list|use|delete> [NAME]\n";
+            return 1;
+        }
+    
+        const std::string action = argv[2];
+    
+        try {
+            if (action == "create") {
+                if (argc != 4) {
+                    throw std::runtime_error(
+                        "Usage: dotfiles-managers profile create NAME"
+                    );
+                }
+    
+                profiles::create(argv[3]);
+            } else if (action == "list") {
+                if (argc != 3) {
+                    throw std::runtime_error(
+                        "Usage: dotfiles-managers profile list"
+                    );
+                }
+    
+                profiles::list();
+            } else if (action == "use") {
+                if (argc != 4) {
+                    throw std::runtime_error(
+                        "Usage: dotfiles-managers profile use NAME"
+                    );
+                }
+    
+                profiles::use(argv[3]);
+                
+            } else if (action == "delete") {
+                if (argc != 4) {
+                    throw std::runtime_error(
+                        "Usage: dotf profile delete NAME"
+                    );
+                }
+
+                profiles::remove(argv[3]);
+            } else {
+                throw std::runtime_error(
+                    "Unknown profile action: " + action
+                );
+            }
+    
+            return 0;
+        } catch (const std::exception& error) {
+            std::cerr << "Error: " << error.what() << '\n';
+            return 1;
+        }
+    }
+    
     if (command == "help" || command == "--help" ||
         command == "-h") {
-std::cout << R"(Usage: dotfiles-managers <command> [arguments] [options]
+std::cout << R"(Usage: dotf <command> [arguments] [options]
 
 Commands:
 path                         Show the dotfiles directory path
@@ -65,7 +123,20 @@ Options for update:
 
     try {
         if (command == "path") {
-            std::cout << config::dotfilesPath().string() << '\n';
+            std::cout << "Dotfiles: "
+                      << config::dotfilesPath().string() << '\n';
+        
+            const auto active = config::activeProfile();
+        
+            if (active.has_value()) {
+                std::cout << "Profile:  " << *active << '\n';
+            } else {
+                std::cout << "Profile:  none selected\n";
+            }
+        
+            std::cout << "Links:    "
+                      << config::linksFile().string() << '\n';
+        
             return 0;
         }
 
@@ -90,7 +161,7 @@ git::commit(dotfiles, "Initial commit");
         
         if (command == "link") {
             if (argc != 4) {
-                std::cerr << "Usage: dotfiles-managers link SOURCE TARGET\n";
+                std::cerr << "Usage: dotf link SOURCE TARGET\n";
                 return 1;
             }
             checkDotfilesPath();
@@ -136,7 +207,7 @@ git::commit(dotfiles, "Initial commit");
 
 if (command == "unlink") {
     if (argc != 3) {
-        std::cerr << "Usage: dotfiles-managers unlink TARGET\n";
+        std::cerr << "Usage: dotf unlink TARGET\n";
         return 1;
     }
     checkDotfilesPath();
@@ -190,7 +261,7 @@ if (command == "about") {
 if (command == "add") {
     if (argc < 4 || argc > 6) {
         std::cerr
-            << "Usage: dotfiles-managers add CONFIG_PATH DOTFILES_PATH "
+            << "Usage: dotf add CONFIG_PATH DOTFILES_PATH "
             << "[-m] [-p]\n";
         return 1;
     }
@@ -317,7 +388,7 @@ if (command == "update") {
 }
 if (command == "checkout") {
     if (argc > 3) {
-        std::cerr << "Usage: dotfiles-managers checkout [BRANCH]\n";
+        std::cerr << "Usage: dotf checkout [BRANCH]\n";
         return 1;
     }
 

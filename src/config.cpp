@@ -2,7 +2,9 @@
 #include "config.hpp"
 
 #include <cstdlib>
+#include <fstream>
 #include <stdexcept>
+#include <string>
 
 namespace config {
 
@@ -17,6 +19,7 @@ std::filesystem::path homePath() {
 
     return home;
 }
+
 std::filesystem::path expandHome(
     const std::filesystem::path& path
 ) {
@@ -24,14 +27,15 @@ std::filesystem::path expandHome(
         return homePath();
     }
 
-    const auto path_string = path.string();
+    const auto pathString = path.string();
 
-    if (path_string.starts_with("~/")) {
-        return homePath() / path_string.substr(2);
+    if (pathString.starts_with("~/")) {
+        return homePath() / pathString.substr(2);
     }
 
     return path;
 }
+
 std::filesystem::path dotfilesPath() {
     const char* path = std::getenv("DOTFILES_PATH");
 
@@ -42,7 +46,39 @@ std::filesystem::path dotfilesPath() {
     return homePath() / ".dotfile";
 }
 
+std::filesystem::path profilePath(
+    const std::string& name
+) {
+    return dotfilesPath() / "profiles" / name;
+}
+
+std::optional<std::string> activeProfile() {
+    const auto activeFile = dotfilesPath() / ".active-profile";
+
+    if (!std::filesystem::exists(activeFile)) {
+        return std::nullopt;
+    }
+
+    std::ifstream file(activeFile);
+    std::string name;
+
+    if (!std::getline(file, name) || name.empty()) {
+        throw std::runtime_error(
+            "Active profile file is empty or unreadable"
+        );
+    }
+
+    return name;
+}
+
 std::filesystem::path linksFile() {
+    const auto active = activeProfile();
+
+    if (active.has_value()) {
+        return profilePath(*active) / ".links";
+    }
+
+    // Preserve compatibility with existing installations.
     return dotfilesPath() / ".links";
 }
 
