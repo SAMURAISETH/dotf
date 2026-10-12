@@ -156,13 +156,7 @@ if (command == "unlink") {
             ++it;
         }
     }
-if (command == "about") {
-    std::cout << R"(Maintainer -> SAMURAISETH
-                    Name -> DOTF
-                    Job -> to main tain dot files.
-                    Made in -> Project was made in C++
-)";
-}
+
 
     file::writeLinks(links);
 
@@ -185,7 +179,13 @@ if (command == "about") {
 
     return 0;
 }
-
+if (command == "about") {
+    std::cout << R"(Maintainer -> SAMURAISETH
+    Name -> DOTF
+    Job -> to main tain dot files.
+    Made in -> Project was made in C++
+)";
+}
 
 if (command == "add") {
     if (argc < 4 || argc > 6) {

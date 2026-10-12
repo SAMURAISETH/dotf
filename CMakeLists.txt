@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(dotfiles-managers
+project(dotf
 VERSION 0.1.0
 LANGUAGES CXX
 )
@@ -19,7 +19,7 @@ GIT_TAG v6.1.9
 
 FetchContent_MakeAvailable(FTXUI)
 
-add_executable(dotfiles-managers
+add_executable(dotf
     src/main.cpp
     src/config.cpp
     src/file.cpp
@@ -28,15 +28,15 @@ add_executable(dotfiles-managers
     src/operations.cpp
 )
 
-target_include_directories(dotfiles-managers
+target_include_directories(dotf
 PRIVATE include
 )
 
-target_compile_options(dotfiles-managers
+target_compile_options(dotf
 PRIVATE -Wall -Wextra -Wpedantic
 )
 
-target_link_libraries(dotfiles-managers
+target_link_libraries(dotf
 PRIVATE
 ftxui::component
 ftxui::dom
