@@ -156,6 +156,13 @@ if (command == "unlink") {
             ++it;
         }
     }
+if (command == "about") {
+    std::cout << R"(Maintainer -> SAMURAISETH
+                    Name -> DOTF
+                    Job -> to main tain dot files.
+                    Made in -> Project was made in C++
+)";
+}
 
     file::writeLinks(links);
 
